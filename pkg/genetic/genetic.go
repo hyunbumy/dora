@@ -2,12 +2,11 @@ package genetic
 
 import (
 	"math/rand"
-	"time"
 )
 
 // Run the genetic algorithm given the locations and the population size
-func Run(locations []Location, size int) [][]int {
-	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
+func Run(locations []Location, size int, randGen *rand.Rand) [][]int {
+	// randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	return initialize(len(locations), size, randGen)
 }
@@ -21,7 +20,7 @@ func initialize(locSize, size int, randGen *rand.Rand) [][]int {
 		}
 
 		// Populate with random routes
-		tempSlice := population[1:]
+		tempSlice := population[i][1:]
 		randGen.Shuffle(len(tempSlice), func(i, j int) {
 			tempSlice[i], tempSlice[j] = tempSlice[j], tempSlice[i]
 		})
