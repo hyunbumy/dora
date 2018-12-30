@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"sort"
+	"fmt"
 	"time"
 )
 
@@ -29,7 +30,18 @@ func Run(locations []Location, popSize, iteration int,
 		population = crossover(population, selectedParents, randGen, mutateProb)
 	}
 
-	return []Location{}
+	calcFitness(locations, population, isTransit)
+	sort.SliceStable(population, func(i, j int) bool {
+		return population[i].fitness < population[j].fitness
+	})
+
+	res := make([]Location, len(locations))
+	for i, v := range population[0].order {
+		res[i] = locations[v]
+	}
+	fmt.Println(population[0])
+
+	return res
 }
 
 func initialize(locations []Location, popSize int, randGen *rand.Rand) []Route {
@@ -69,10 +81,10 @@ func getDistFitness(locations []Location, order []int) float64 {
 		from := locations[order[i]]
 		to := locations[order[i+1]]
 		fitness += calcHaversine(
-			from.latitude, from.longitude, to.latitude, to.longitude,
+			from.Latitude, from.Longitude, to.Latitude, to.Longitude,
 		)
 	}
-	return 1 / fitness // Inverse of the cost
+	return fitness // Inverse of the cost
 }
 
 func getTransitFitness(locations []Location, order []int) float64 {
@@ -100,35 +112,47 @@ func calcHaversine(latFrom, lonFrom, latTo, lonTo float64) float64 {
 func rouletteWheelSelection(routes []Route, randGen *rand.Rand) []parentsStruct {
 	// Sort in a descending order
 	sort.SliceStable(routes, func(i, j int) bool {
-		return routes[i].fitness > routes[j].fitness
+		return routes[i].fitness < routes[j].fitness
 	})
 
-	var totalFitness float64
-	for _, v := range routes {
-		totalFitness += v.fitness
+	fitnessChart := make([]float64, len(routes[0].order))
+	tot := float64(0)
+	for i := range fitnessChart {
+		if i == 0 || i == 1 {
+			fitnessChart[i] += 6
+		} else if i == 2 || i == 3 {
+			fitnessChart[i] += 3
+		} else {
+			fitnessChart[i] = 1
+		}
+		fitnessChart[i] /= float64(len(fitnessChart))
+		tot += fitnessChart[i]
+	}
+	for _, v := range fitnessChart {
+		v /= tot
 	}
 
 	selectedParents := make([]parentsStruct, len(routes))
 	for i := 0; i < len(selectedParents); i++ {
 		selectedParents[i] = parentsStruct{
-			getParent(randGen, routes, totalFitness),
-			getParent(randGen, routes, totalFitness),
+			getParent(randGen, fitnessChart),
+			getParent(randGen, fitnessChart),
 		}
 	}
 
 	return selectedParents
 }
 
-func getParent(randGen *rand.Rand, routes []Route, totFit float64) int {
+func getParent(randGen *rand.Rand, fitnessChart []float64) int {
 	randProb := randGen.Float64()
 	runningTotal := float64(0)
-	for i, v := range routes {
-		runningTotal += v.fitness / totFit
+	for i, v := range fitnessChart {
+		runningTotal += v
 		if randProb < runningTotal {
 			return i
 		}
 	}
-	return len(routes) - 1 // Return the last element
+	return len(fitnessChart) - 1 // Return the last element
 }
 
 func crossover(routes []Route, selectedParents []parentsStruct,
