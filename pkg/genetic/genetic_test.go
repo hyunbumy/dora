@@ -52,6 +52,7 @@ func TestInitialization(t *testing.T) {
 }
 
 func TestHaversineFitness(t *testing.T) {
+	// TODO: Obtain expected value
 	size := 8
 	locations := []Location{
 		Location{"LAX Airport", 33.941845, -118.408635},
@@ -93,4 +94,23 @@ func TestHaversineFitness(t *testing.T) {
 	}
 
 	fmt.Println(fitness)
+}
+
+func TestRouletteSelection(t *testing.T) {
+	// TODO: Obtain expected value
+	randGen := rand.New(rand.NewSource(0))
+	routes := []Route{
+		Route{[]int{0, 9, 6, 11, 14, 17, 19, 12, 13, 4, 8, 1, 2, 7, 18, 5, 16, 3, 10, 15}, 3},
+		Route{[]int{0, 17, 11, 7, 6, 2, 12, 18, 4, 19, 10, 8, 15, 16, 13, 14, 1, 5, 9, 3}, 4},
+		Route{[]int{0, 2, 8, 17, 1, 9, 13, 15, 18, 12, 11, 7, 6, 4, 5, 14, 19, 16, 3, 10}, 5},
+		Route{[]int{0, 18, 8, 4, 3, 7, 12, 6, 14, 16, 11, 15, 17, 10, 1, 13, 19, 5, 2, 9}, 6},
+		Route{[]int{0, 14, 18, 2, 10, 4, 16, 11, 3, 12, 9, 15, 7, 5, 6, 19, 1, 13, 8, 17}, 7},
+		Route{[]int{0, 5, 4, 3, 15, 6, 1, 9, 13, 14, 16, 12, 2, 7, 19, 17, 10, 8, 18, 11}, 8},
+		Route{[]int{0, 18, 5, 17, 13, 14, 12, 1, 15, 3, 11, 10, 16, 2, 19, 8, 4, 9, 6, 7}, 9},
+		Route{[]int{0, 1, 12, 5, 3, 9, 16, 2, 13, 4, 10, 7, 15, 18, 11, 17, 8, 19, 14, 6}, 10},
+	}
+	res := rouletteWheelSelection(routes, randGen)
+
+	fmt.Println(res)
+	fmt.Println(routes)
 }

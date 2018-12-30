@@ -3,6 +3,7 @@ package genetic
 import (
 	"math"
 	"math/rand"
+	"sort"
 )
 
 type parents struct {
@@ -50,7 +51,7 @@ func calcFitness(locations []Location, order []int, isTransit bool) float64 {
 			)
 		}
 	}
-	return fitness
+	return 1 / fitness // Inverse of the cost
 }
 
 func calcHaversine(latFrom, lonFrom, latTo, lonTo float64) float64 {
@@ -67,5 +68,39 @@ func calcHaversine(latFrom, lonFrom, latTo, lonTo float64) float64 {
 
 	distance = earthRadius * c
 
-	return distance
+	return distance // Distance in km
+}
+
+func rouletteWheelSelection(routes []Route, randGen *rand.Rand) []parents {
+	// Sort in a descending order
+	sort.SliceStable(routes, func(i, j int) bool {
+		return routes[i].fitness > routes[j].fitness
+	})
+
+	var totalFitness float64
+	for _, v := range routes {
+		totalFitness += v.fitness
+	}
+
+	selectedParents := make([]parents, len(routes))
+	for i := 0; i < len(selectedParents); i++ {
+		selectedParents[i] = parents{
+			getParent(randGen, routes, totalFitness),
+			getParent(randGen, routes, totalFitness),
+		}
+	}
+
+	return selectedParents
+}
+
+func getParent(randGen *rand.Rand, routes []Route, totFit float64) int {
+	randProb := randGen.Float64()
+	runningTotal := float64(0)
+	for i, v := range routes {
+		runningTotal += v.fitness / totFit
+		if randProb < runningTotal {
+			return i
+		}
+	}
+	return len(routes) - 1 // Return the last element
 }
