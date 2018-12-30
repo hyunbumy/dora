@@ -22,9 +22,6 @@ func TestInitialization(t *testing.T) {
 		Location{"Columbia University", 40.806814, -73.962496},
 	}
 
-	algo := geneticAlgorithm{
-		locations: locations, populationSize: size, randGen: randGen,
-	}
 	expected := []Route{
 		Route{[]int{0, 3, 4, 6, 7, 8, 1, 5, 2, 9}, -1},
 		Route{[]int{0, 7, 1, 4, 8, 5, 6, 3, 2, 9}, -1},
@@ -35,8 +32,7 @@ func TestInitialization(t *testing.T) {
 		Route{[]int{0, 6, 2, 8, 4, 3, 9, 1, 7, 5}, -1},
 		Route{[]int{0, 2, 5, 8, 3, 9, 4, 1, 7, 6}, -1},
 	}
-	algo.initialize()
-	res := algo.routes
+	res := initialize(locations, size, randGen)
 
 	if len(expected) != len(res) {
 		t.Errorf("Length Error: expected length = %d, actual length = %d\n",
@@ -56,7 +52,6 @@ func TestInitialization(t *testing.T) {
 }
 
 func TestHaversineFitness(t *testing.T) {
-	randGen := rand.New(rand.NewSource(0))
 	size := 8
 	locations := []Location{
 		Location{"LAX Airport", 33.941845, -118.408635},
@@ -80,9 +75,6 @@ func TestHaversineFitness(t *testing.T) {
 		Location{"La Brea Tar Pits", 34.063814, -118.355466},
 		Location{"Zuma Beach", 34.015489, -118.822160},
 	}
-	algo := geneticAlgorithm{
-		locations: locations, populationSize: size, randGen: randGen,
-	}
 
 	routes := [][]int{
 		{0, 9, 6, 11, 14, 17, 19, 12, 13, 4, 8, 1, 2, 7, 18, 5, 16, 3, 10, 15},
@@ -96,8 +88,8 @@ func TestHaversineFitness(t *testing.T) {
 	}
 
 	fitness := make([]float64, size)
-	for i := 0; i < algo.populationSize; i++ {
-		fitness[i] = algo.calcFitness(routes[i], false)
+	for i := 0; i < size; i++ {
+		fitness[i] = calcFitness(locations, routes[i], false)
 	}
 
 	fmt.Println(fitness)
