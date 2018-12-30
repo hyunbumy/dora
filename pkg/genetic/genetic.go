@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"sort"
 	"time"
-	
 )
 
 type parentsStruct struct {
@@ -14,7 +13,8 @@ type parentsStruct struct {
 }
 
 // Run the genetic algorithm given the locations and the population size
-func Run(locations []Location, popSize, iteration int, isTransit bool) []Location {
+func Run(locations []Location, popSize, iteration int, 
+		 isTransit bool, mutateProb float64) []Location {
 	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
 	population := initialize(locations, popSize, randGen)
 
@@ -26,7 +26,7 @@ func Run(locations []Location, popSize, iteration int, isTransit bool) []Locatio
 		selectedParents := rouletteWheelSelection(population, randGen)
 
 		// Crossover
-		population = crossover(population, selectedParents, randGen)
+		population = crossover(population, selectedParents, randGen, mutateProb)
 	}
 
 	return []Location{}
@@ -131,24 +131,29 @@ func getParent(randGen *rand.Rand, routes []Route, totFit float64) int {
 	return len(routes) - 1 // Return the last element
 }
 
-func crossover(routes []Route, selectedParents []parentsStruct, randGen *rand.Rand) []Route {
+func crossover(routes []Route, selectedParents []parentsStruct,
+	randGen *rand.Rand, mutateProb float64) []Route {
 	newRoutes := make([]Route, len(routes))
 	for i := 0; i < len(selectedParents); i++ {
 		newRoutes[i] = getChild(routes, selectedParents[i], randGen)
+
+		if randGen.Float64() < mutateProb {
+			mutate(newRoutes[i], randGen)
+		}
 	}
 
 	return newRoutes
 }
 
 func getChild(routes []Route, parents parentsStruct, randGen *rand.Rand) Route {
-	coin := randGen.Intn(2)	// Determine which parent to go first
+	coin := randGen.Intn(2) // Determine which parent to go first
 	firstParent, secondParent := parents.parent1, parents.parent2
 	if coin == 1 {
 		firstParent, secondParent = secondParent, firstParent
 	}
 
 	newRoute := Route{make([]int, len(routes[0].order)), -1}
-	crossInd := randGen.Intn(len(newRoute.order)-2)
+	crossInd := randGen.Intn(len(newRoute.order) - 2)
 	crossInd++
 	used := make(map[int]bool)
 
@@ -164,4 +169,10 @@ func getChild(routes []Route, parents parentsStruct, randGen *rand.Rand) Route {
 	}
 
 	return newRoute
+}
+
+func mutate(route Route, randGen *rand.Rand) {
+	ind1, ind2 := randGen.Intn(len(route.order)-1)+1,
+				  randGen.Intn(len(route.order)-1)+1
+	route.order[ind1], route.order[ind2] = route.order[ind2], route.order[ind1]
 }
