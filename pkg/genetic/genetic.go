@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"sort"
+	"time"
 )
 
 type parents struct {
@@ -12,8 +13,13 @@ type parents struct {
 }
 
 // Run the genetic algorithm given the locations and the population size
-func Run(locations []Location, popSize int, isTransit bool) []Location {
-	// randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
+func Run(locations []Location, popSize, iteration int, isTransit bool) []Location {
+	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
+	population := initialize(locations, popSize, randGen)
+
+	for i := 0; i < iteration; i++ {
+		calcFitness(locations, population, isTransit)
+	}
 
 	return []Location{}
 }
@@ -37,21 +43,33 @@ func initialize(locations []Location, popSize int, randGen *rand.Rand) []Route {
 	return population
 }
 
-func calcFitness(locations []Location, order []int, isTransit bool) float64 {
-	fitness := float64(0)
+func calcFitness(locations []Location, routes []Route, isTransit bool) {
+	fitnessFunc := getDistFitness
 	if isTransit {
-		// Use Google Maps API to calculate the total travel time
-	} else {
-		// Use Haversine
-		for i := 0; i < len(order)-1; i++ {
-			from := locations[order[i]]
-			to := locations[order[i+1]]
-			fitness += calcHaversine(
-				from.latitude, from.longitude, to.latitude, to.longitude,
-			)
-		}
+		fitnessFunc = getTransitFitness
+	}
+
+	for i := 0; i < len(routes); i++ {
+		routes[i].fitness = fitnessFunc(locations, routes[i].order)
+	}
+}
+
+func getDistFitness(locations []Location, order []int) float64 {
+	fitness := float64(0)
+	// Use Haversine
+	for i := 0; i < len(order)-1; i++ {
+		from := locations[order[i]]
+		to := locations[order[i+1]]
+		fitness += calcHaversine(
+			from.latitude, from.longitude, to.latitude, to.longitude,
+		)
 	}
 	return 1 / fitness // Inverse of the cost
+}
+
+func getTransitFitness(locations []Location, order []int) float64 {
+	// Use Google Maps API to calculate the total travel time
+	return -1
 }
 
 func calcHaversine(latFrom, lonFrom, latTo, lonTo float64) float64 {

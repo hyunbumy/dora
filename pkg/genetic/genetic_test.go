@@ -90,7 +90,7 @@ func TestHaversineFitness(t *testing.T) {
 
 	fitness := make([]float64, size)
 	for i := 0; i < size; i++ {
-		fitness[i] = calcFitness(locations, routes[i], false)
+		fitness[i] = getDistFitness(locations, routes[i])
 	}
 
 	fmt.Println(fitness)
