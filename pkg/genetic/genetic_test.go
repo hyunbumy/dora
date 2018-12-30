@@ -112,14 +112,14 @@ func TestRouletteSelection(t *testing.T) {
 	res := rouletteWheelSelection(routes, randGen)
 
 	expected := []parentsStruct{
-		parentsStruct{7, 1},
 		parentsStruct{4, 0},
-		parentsStruct{2, 1},
-		parentsStruct{1, 4},
-		parentsStruct{6, 0},
-		parentsStruct{1, 6},
-		parentsStruct{5, 1},
-		parentsStruct{3, 1},
+		parentsStruct{2, 0},
+		parentsStruct{1, 0},
+		parentsStruct{0, 2},
+		parentsStruct{3, 0},
+		parentsStruct{0, 4},
+		parentsStruct{3, 0},
+		parentsStruct{2, 0},
 	}
 
 	if len(res) != len(expected) {
