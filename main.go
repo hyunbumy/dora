@@ -8,8 +8,8 @@ import (
 func main() {
 	fmt.Println("Test")
 
-	size := 200
-	iteration := 2000
+	size := 20
+	iteration := 1000
 	locations := []genetic.Location{
 		genetic.Location{Name: "LAX Airport", Latitude: 33.941845, Longitude: -118.408635},
 		genetic.Location{Name: "Tommy Trojan", Latitude: 34.020547, Longitude: -118.285397},

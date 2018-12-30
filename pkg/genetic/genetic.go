@@ -17,6 +17,7 @@ type parentsStruct struct {
 func Run(locations []Location, popSize, iteration int, 
 		 isTransit bool, mutateProb float64) []Location {
 	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// randGen = rand.New(rand.NewSource(1337))
 	population := initialize(locations, popSize, randGen)
 
 	for i := 0; i < iteration; i++ {
