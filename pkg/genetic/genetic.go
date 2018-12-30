@@ -5,9 +5,10 @@ import (
 	"math/rand"
 	"sort"
 	"time"
+	
 )
 
-type parents struct {
+type parentsStruct struct {
 	parent1 int
 	parent2 int
 }
@@ -18,7 +19,14 @@ func Run(locations []Location, popSize, iteration int, isTransit bool) []Locatio
 	population := initialize(locations, popSize, randGen)
 
 	for i := 0; i < iteration; i++ {
+		// Fitness calculation
 		calcFitness(locations, population, isTransit)
+
+		// Selection
+		selectedParents := rouletteWheelSelection(population, randGen)
+
+		// Crossover
+		population = crossover(population, selectedParents, randGen)
 	}
 
 	return []Location{}
@@ -89,7 +97,7 @@ func calcHaversine(latFrom, lonFrom, latTo, lonTo float64) float64 {
 	return distance // Distance in km
 }
 
-func rouletteWheelSelection(routes []Route, randGen *rand.Rand) []parents {
+func rouletteWheelSelection(routes []Route, randGen *rand.Rand) []parentsStruct {
 	// Sort in a descending order
 	sort.SliceStable(routes, func(i, j int) bool {
 		return routes[i].fitness > routes[j].fitness
@@ -100,9 +108,9 @@ func rouletteWheelSelection(routes []Route, randGen *rand.Rand) []parents {
 		totalFitness += v.fitness
 	}
 
-	selectedParents := make([]parents, len(routes))
+	selectedParents := make([]parentsStruct, len(routes))
 	for i := 0; i < len(selectedParents); i++ {
-		selectedParents[i] = parents{
+		selectedParents[i] = parentsStruct{
 			getParent(randGen, routes, totalFitness),
 			getParent(randGen, routes, totalFitness),
 		}
@@ -121,4 +129,39 @@ func getParent(randGen *rand.Rand, routes []Route, totFit float64) int {
 		}
 	}
 	return len(routes) - 1 // Return the last element
+}
+
+func crossover(routes []Route, selectedParents []parentsStruct, randGen *rand.Rand) []Route {
+	newRoutes := make([]Route, len(routes))
+	for i := 0; i < len(selectedParents); i++ {
+		newRoutes[i] = getChild(routes, selectedParents[i], randGen)
+	}
+
+	return newRoutes
+}
+
+func getChild(routes []Route, parents parentsStruct, randGen *rand.Rand) Route {
+	coin := randGen.Intn(2)	// Determine which parent to go first
+	firstParent, secondParent := parents.parent1, parents.parent2
+	if coin == 1 {
+		firstParent, secondParent = secondParent, firstParent
+	}
+
+	newRoute := Route{make([]int, len(routes[0].order)), -1}
+	crossInd := randGen.Intn(len(newRoute.order)-2)
+	crossInd++
+	used := make(map[int]bool)
+
+	for i := 1; i <= crossInd; i++ {
+		newRoute.order[i] = routes[firstParent].order[i]
+		used[newRoute.order[i]] = true
+	}
+	for i := 1; i < len(newRoute.order); i++ {
+		if !used[routes[secondParent].order[i]] {
+			crossInd++
+			newRoute.order[crossInd] = routes[secondParent].order[i]
+		}
+	}
+
+	return newRoute
 }
