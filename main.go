@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./pkg/genetic"
+	"github.com/hyunbumy/dora/pkg/genetic"
 	"fmt"
 )
 
