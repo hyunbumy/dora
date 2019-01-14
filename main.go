@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/hyunbumy/dora/pkg/genetic"
 	"fmt"
+	
+	"github.com/hyunbumy/dora/pkg/genetic"
 )
 
 func main() {
